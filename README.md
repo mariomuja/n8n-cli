@@ -324,3 +324,11 @@ n8n-cli is designed as a **thin core** that you extend with a separate package f
 
 See [docs/EXTENSIONS.md](docs/EXTENSIONS.md) for full examples (deploy with credentials, multi-site deploy, backup, webhook tests).
 
+---
+
+## Contact
+
+**Mario Muja**  
+Hamburg, Germany  
+📧 mario.muja@gmail.com  
+📞 +49 1520 464 14 73
