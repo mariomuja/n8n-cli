@@ -1,32 +1,22 @@
 # Push n8n-cli to https://github.com/mariomuja/n8n-cli
-# Run from n8n root: .\n8n-cli\scripts\publish-to-github.ps1
+# Run from anywhere: .\n8n-cli\scripts\publish-to-github.ps1
+# Uses git subtree to push n8n/n8n-cli directly (no staging folder).
 
-$src = Join-Path $PSScriptRoot ".."
-$dest = Join-Path (Split-Path $src -Parent) "n8n-cli-publish"
 $repo = "https://github.com/mariomuja/n8n-cli.git"
+$prefix = "n8n/n8n-cli"
 
-# Sync source to publish folder (exclude node_modules, dist)
-robocopy $src $dest /E /XD node_modules dist .git /NFL /NDL /NJH /NJS | Out-Null
+$root = git rev-parse --show-toplevel 2>$null
+if (-not $root) {
+    Write-Host "Not in a git repo." -ForegroundColor Red
+    exit 1
+}
 
-Push-Location $dest
+Push-Location $root
 try {
-    if (-not (Test-Path ".git")) {
-        git init
-        git remote add origin $repo
+    git subtree push --prefix=$prefix $repo main
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "`nPushed to $repo" -ForegroundColor Green
     }
-    git add .
-    $status = git status --short
-    if (-not $status) {
-        Write-Host "No changes to commit." -ForegroundColor Yellow
-        exit 0
-    }
-    git status --short
-    $msg = Read-Host "Commit message (or Enter for 'Update n8n-cli')"
-    if ([string]::IsNullOrWhiteSpace($msg)) { $msg = "Update n8n-cli" }
-    git commit -m $msg
-    git branch -M main 2>$null
-    git push -u origin main
-    Write-Host "`nPushed to $repo" -ForegroundColor Green
 } finally {
     Pop-Location
 }

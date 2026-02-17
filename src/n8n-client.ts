@@ -91,8 +91,10 @@ export async function loadConfig(): Promise<N8nConfig> {
   const path = await import('node:path');
   const { fileURLToPath } = await import('node:url');
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  const cwd = process.cwd();
   const candidates = [
-    process.cwd(),
+    cwd,
+    path.resolve(cwd, '..'),
     path.resolve(__dirname, '..'),
     path.resolve(__dirname, '..', '..'),
   ];
@@ -118,8 +120,12 @@ export async function loadConfig(): Promise<N8nConfig> {
     }
   }
 
+  const hint =
+    cwd.includes('n8n-tools') || cwd.includes('n8n-cli')
+      ? ` Create config/n8n-config.local.json in ${path.basename(cwd)} (copy from config/n8n-config.example.json).`
+      : '';
   throw new Error(
-    `Failed to load n8n config. Use N8N_BASE_URL + N8N_API_KEY env vars, or create config/n8n-config.json with { "baseUrl": "...", "apiKey": "..." }. Use N8N_CONFIG_FILE for a specific config file.`
+    `Failed to load n8n config. Use N8N_BASE_URL + N8N_API_KEY env vars, or create config/n8n-config.local.json with { "baseUrl": "...", "apiKey": "..." }. Use N8N_CONFIG_FILE for a specific config file.${hint}`
   );
 }
 
