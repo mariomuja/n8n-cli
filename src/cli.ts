@@ -10,7 +10,7 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadConfig, N8nClient, N8nConfig } from './n8n-client.js';
+import { loadConfig, N8nClient, N8nConfig, toFriendlyApiError } from './n8n-client.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -869,6 +869,6 @@ async function interactive(client: N8nClient): Promise<void> {
 }
 
 main().catch((err) => {
-  console.error(err);
+  console.error(toFriendlyApiError(err));
   process.exit(1);
 });

@@ -13,7 +13,7 @@
 
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { loadConfig, N8nClient } from './n8n-client.js';
+import { loadConfig, N8nClient, toFriendlyApiError } from './n8n-client.js';
 
 async function deploy(): Promise<void> {
   const workflowPath = process.argv[2];
@@ -66,6 +66,6 @@ async function deploy(): Promise<void> {
 }
 
 deploy().catch((err) => {
-  console.error('Deploy failed:', (err as Error).message);
+  console.error('Deploy failed:', toFriendlyApiError(err));
   process.exit(1);
 });

@@ -130,6 +130,91 @@ export async function loadConfig(): Promise<N8nConfig> {
 }
 
 /**
+ * Returns a user-friendly message for API/connection errors.
+ * Use in CLI catch blocks to help users fix config issues.
+ */
+export function toFriendlyApiError(err: unknown): string {
+  const msg = err instanceof Error ? err.message : String(err);
+  const cause = err instanceof Error && 'cause' in err ? (err.cause as Error) : null;
+  const causeMsg = cause?.message ?? '';
+  const causeCode = (cause as NodeJS.ErrnoException)?.code ?? '';
+
+  // 401 Unauthorized – invalid or missing API key
+  if (msg.includes('401') || msg.includes('unauthorized')) {
+    return (
+      'Invalid API key. Update apiKey in your config (n8n-config.local.json or N8N_API_KEY).\n' +
+      '  Create an API key in n8n: Settings → API.'
+    );
+  }
+
+  // 403 Forbidden
+  if (msg.includes('403') || msg.includes('forbidden')) {
+    return (
+      'Access denied (403). Check that your API key has the required permissions.\n' +
+      '  Create or regenerate an API key in n8n: Settings → API.'
+    );
+  }
+
+  // 404 – wrong URL or instance not found
+  if (msg.includes('404') || msg.includes('not found')) {
+    return (
+      'n8n instance not found. Check baseUrl in your config (n8n-config.local.json or N8N_BASE_URL).\n' +
+      '  Ensure the URL is correct and n8n is running.'
+    );
+  }
+
+  // ENOTFOUND – hostname cannot be resolved
+  if (causeCode === 'ENOTFOUND' || causeMsg.includes('ENOTFOUND') || msg.includes('getaddrinfo')) {
+    return (
+      'Cannot resolve n8n hostname. Check baseUrl in your config (n8n-config.local.json or N8N_BASE_URL).\n' +
+      '  Ensure the URL is correct and reachable from your network.'
+    );
+  }
+
+  // ECONNREFUSED – nothing listening
+  if (causeCode === 'ECONNREFUSED' || causeMsg.includes('ECONNREFUSED')) {
+    return (
+      'Cannot connect to n8n. Is it running? Check baseUrl in your config (n8n-config.local.json or N8N_BASE_URL).\n' +
+      '  For local: start n8n with `npx n8n` (default port 5678).'
+    );
+  }
+
+  // Self-signed certificate
+  if (
+    causeCode === 'SELF_SIGNED_CERT_IN_CHAIN' ||
+    causeMsg.includes('SELF_SIGNED_CERT') ||
+    msg.includes('self-signed')
+  ) {
+    return (
+      'Self-signed certificate rejected. For corporate/internal n8n instances:\n' +
+      '  Set rejectUnauthorized: false in config, or run with NODE_TLS_REJECT_UNAUTHORIZED=0.'
+    );
+  }
+
+  // Timeout
+  if (msg.includes('timed out') || msg.includes('AbortError')) {
+    return (
+      'Request timed out. Check baseUrl and network. Increase timeoutMs in config if needed.'
+    );
+  }
+
+  // Generic n8n API error – pass through with a hint
+  if (msg.includes('n8n API error')) {
+    return msg + '\n  Check baseUrl and apiKey in your config.';
+  }
+
+  // Fetch/network errors
+  if (msg.includes('fetch failed') || causeMsg) {
+    return (
+      `Connection failed: ${causeMsg || msg}\n` +
+      '  Check baseUrl and apiKey in your config (n8n-config.local.json or env vars).'
+    );
+  }
+
+  return msg;
+}
+
+/**
  * n8n REST API client
  */
 function parseApiError(status: number, text: string): Error {
