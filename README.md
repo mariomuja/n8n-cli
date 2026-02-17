@@ -39,6 +39,63 @@ Or use env vars: `N8N_BASE_URL` + `N8N_API_KEY`
 
 ---
 
+## Command Reference
+
+| Command | Description |
+|---------|-------------|
+| **Build & Start** | |
+| `npm run build` | Compile TypeScript |
+| `npm run start` | Start interactive CLI |
+| `npm run agent` | Interactive CLI (workflows + executions + overview) |
+| **List** | |
+| `npm run list` | List all workflows |
+| `npm run list:active` | List active workflows only |
+| `npm run list:inactive` | List inactive workflows only |
+| `npm run search -- <name-filter>` | Filter workflows by name |
+| **Run & Manage** | |
+| `npm run run -- <id\|name>` | Run workflow by ID or name |
+| `npm run get -- <id\|name>` | Get workflow JSON |
+| `npm run export -- <id\|name> [file.json]` | Export workflow to file or stdout |
+| `npm run save -- <id\|name> [file.json]` | Save workflow to workflows/saved/ |
+| `npm run save:all [directory]` | Save all workflows |
+| `npm run import -- <workflow.json> [new-name]` | Import workflow from JSON |
+| `npm run activate -- <id\|name>` | Activate workflow |
+| `npm run deactivate -- <id\|name>` | Deactivate workflow |
+| `npm run delete -- <id\|name>` | Delete workflow |
+| `npm run clone -- <id\|name> <new-name>` | Clone workflow |
+| `npm run rename -- <id\|name> <new-name>` | Rename workflow |
+| `npm run transfer -- <id\|name> <projectId>` | Transfer workflow to another project |
+| **Executions** | |
+| `npm run executions [workflowId]` | List executions |
+| `npm run executions:errors [workflowId]` | List failed executions only |
+| `npm run status [executionId]` | Status of executions |
+| `npm run retry -- <executionId>` | Retry failed execution |
+| `npm run stop -- <executionId>` | Stop running execution |
+| `npm run delete-execution -- <executionId>` | Delete execution |
+| **Tags & Audit** | |
+| `npm run tags` | List all tags |
+| `npm run tag:create -- <name>` | Create tag |
+| `npm run workflow-tags -- <id\|name> [tagIds]` | Show or set workflow tags |
+| `npm run audit` | Run security audit |
+| **Variables & Webhooks** | |
+| `npm run variables` | List instance variables |
+| `npm run webhook -- <id\|name>` | Show webhook URLs (Production + Test) |
+| **Config & Validation** | |
+| `npm run config` | Show loaded config |
+| `npm run config:endpoint -- <url>` | Set n8n URL |
+| `npm run config:apikey -- <key>` | Set API key |
+| `npm run config:project -- <id>` | Set project ID (optional) |
+| `npm run ping` | Health check |
+| `npm run credentials` | List credentials |
+| `npm run validate -- <workflow.json>` | Validate workflow JSON |
+| **Deploy & Diff** | |
+| `npm run deploy:one -- <path>` | Deploy any workflow JSON file |
+| `npm run diff -- <id\|name> <local-workflow.json>` | Compare workflow with local file |
+| **Tests** | |
+| `npm run test:client` | Run N8nClient integration tests |
+
+---
+
 ## Configuration
 
 **1. Config file** – `config/n8n-config.local.json` or `config/n8n-config.json`
@@ -240,7 +297,20 @@ npx n8n-cli list
 
 ## Extending n8n-cli
 
-Add your own deploy scripts, backup tools, and webhook tests. See [docs/EXTENSIONS.md](docs/EXTENSIONS.md) for the extension mechanism and examples.
+n8n-cli is designed as a **thin core** that you extend with a separate package for private workflows, deploy scripts, and tests. The public package stays minimal; your private tooling lives in its own repo.
+
+**Extension model:**
+
+1. **Create a private package** (e.g. `my-n8n-tools`) with `n8n-cli` as a dependency.
+2. **Keep config and secrets local** – `config/n8n-config.local.json` in your package (gitignored). `loadConfig` searches from `process.cwd()` upward, so when you run from your package, it finds your config.
+3. **Proxy CLI commands** – Run the n8n-cli CLI from your package so it uses your config:
+   ```json
+   "list": "node node_modules/n8n-cli/dist/src/cli.js list",
+   "list:prod": "cross-env N8N_CONFIG_FILE=config/n8n-config.prod.json node node_modules/n8n-cli/dist/src/cli.js list"
+   ```
+4. **Add custom scripts** – Import `loadConfig` and `N8nClient` from `n8n-cli` for deploy, backup, and webhook test scripts. Your workflows and secrets stay in your package.
+
+See [docs/EXTENSIONS.md](docs/EXTENSIONS.md) for full examples (deploy with credentials, multi-site deploy, backup, webhook tests).
 
 ---
 
