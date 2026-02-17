@@ -53,7 +53,8 @@
     "deploy:one": "node dist/src/deploy-one.js",
     "test": "vitest run --coverage",
     "test:watch": "vitest --coverage",
-    "test:client": "node dist/tests/run-tests.js"
+    "test:client": "node dist/tests/run-tests.js",
+    "test:integration": "node dist/tests/run-tests.js --integration"
   },
   "keywords": [
     "n8n",
