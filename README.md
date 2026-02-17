@@ -16,6 +16,8 @@ n8n’s REST API lets you upload workflows with a simple `POST`. So why use this
 
 For a one-off upload, `curl` is enough. For repeated deploys, CI/CD, or scripts that list, run, and manage workflows across instances, n8n-cli keeps things simple and consistent.
 
+**Compatibility with [official n8n CLI](https://docs.n8n.io/hosting/cli-commands/)** – The built-in n8n CLI runs on the server. n8n-cli is a remote REST API client. Commands that map to the official CLI: `execute` → `run`, `activate`/`deactivate`, `activate:all`/`deactivate:all`, `export`/`save:all`, `import`, `audit`.
+
 ---
 
 ## Setup
@@ -54,13 +56,16 @@ Or use env vars: `N8N_BASE_URL` + `N8N_API_KEY`
 | `npm run search -- <name-filter>` | Filter workflows by name |
 | **Run & Manage** | |
 | `npm run run -- <id\|name>` | Run workflow by ID or name |
+| `npm run execute -- <id\|name>` | Same as run (matches official n8n CLI) |
 | `npm run get -- <id\|name>` | Get workflow JSON |
 | `npm run export -- <id\|name> [file.json]` | Export workflow to file or stdout |
 | `npm run save -- <id\|name> [file.json]` | Save workflow to workflows/saved/ |
 | `npm run save:all [directory]` | Save all workflows |
 | `npm run import -- <workflow.json> [new-name]` | Import workflow from JSON |
 | `npm run activate -- <id\|name>` | Activate workflow |
+| `npm run activate:all` | Activate all inactive workflows |
 | `npm run deactivate -- <id\|name>` | Deactivate workflow |
+| `npm run deactivate:all` | Deactivate all active workflows |
 | `npm run delete -- <id\|name>` | Delete workflow |
 | `npm run clone -- <id\|name> <new-name>` | Clone workflow |
 | `npm run rename -- <id\|name> <new-name>` | Rename workflow |
@@ -146,13 +151,16 @@ npm run config:project -- optional-project-id
 | Command | Description |
 |---------|-------------|
 | `npm run run -- <id\|name>` | Run workflow by ID or name |
+| `npm run execute -- <id\|name>` | Same as run (matches official n8n CLI) |
 | `npm run get -- <id\|name>` | Get workflow JSON |
 | `npm run export -- <id\|name> [file.json]` | Export workflow to file or stdout |
 | `npm run save -- <id\|name> [file.json]` | Save workflow to workflows/saved/ |
 | `npm run save:all [directory]` | Save all workflows |
 | `npm run import -- <workflow.json> [new-name]` | Import workflow from JSON |
 | `npm run activate -- <id\|name>` | Activate workflow |
+| `npm run activate:all` | Activate all inactive workflows |
 | `npm run deactivate -- <id\|name>` | Deactivate workflow |
+| `npm run deactivate:all` | Deactivate all active workflows |
 | `npm run delete -- <id\|name>` | Delete workflow |
 | `npm run clone -- <id\|name> <new-name>` | Clone workflow |
 | `npm run rename -- <id\|name> <new-name>` | Rename workflow |
@@ -234,6 +242,8 @@ npm run config:project -- optional-project-id
 | `npm run test` | Run unit tests with coverage (Vitest) |
 | `npm run test:watch` | Run tests in watch mode |
 | `npm run test:client` | Run N8nClient integration tests (requires n8n instance) |
+
+See [test/README.md](test/README.md) for documentation of implemented tests.
 
 ---
 

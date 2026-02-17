@@ -9,13 +9,27 @@ describe('N8nClient', () => {
     apiKey: 'test-api-key',
   };
 
+  const origEnv: Record<string, string | undefined> = {};
+
   beforeEach(() => {
     vi.stubGlobal('fetch', mockFetch);
     mockFetch.mockReset();
+    origEnv.HTTP_PROXY = process.env.HTTP_PROXY;
+    origEnv.HTTPS_PROXY = process.env.HTTPS_PROXY;
+    origEnv.http_proxy = process.env.http_proxy;
+    origEnv.https_proxy = process.env.https_proxy;
   });
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    if (origEnv.HTTP_PROXY !== undefined) process.env.HTTP_PROXY = origEnv.HTTP_PROXY;
+    else delete process.env.HTTP_PROXY;
+    if (origEnv.HTTPS_PROXY !== undefined) process.env.HTTPS_PROXY = origEnv.HTTPS_PROXY;
+    else delete process.env.HTTPS_PROXY;
+    if (origEnv.http_proxy !== undefined) process.env.http_proxy = origEnv.http_proxy;
+    else delete process.env.http_proxy;
+    if (origEnv.https_proxy !== undefined) process.env.https_proxy = origEnv.https_proxy;
+    else delete process.env.https_proxy;
   });
 
   it('constructs with config and normalizes baseUrl', () => {
@@ -131,6 +145,42 @@ describe('N8nClient', () => {
     expect(all).toHaveLength(2);
     expect(all[0].name).toBe('W1');
     expect(all[1].name).toBe('W2');
+  });
+
+  it('listWorkflowsAll with active=true passes filter to API', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      text: () =>
+        Promise.resolve(
+          JSON.stringify({ data: [{ id: '1', name: 'Active', active: true }], nextCursor: undefined })
+        ),
+      headers: { get: () => 'application/json' },
+    });
+    const client = new N8nClient(config);
+    await client.listWorkflowsAll(true);
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('active=true'),
+      expect.any(Object)
+    );
+  });
+
+  it('listWorkflowsAll with active=false passes filter to API', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      text: () =>
+        Promise.resolve(
+          JSON.stringify({ data: [{ id: '1', name: 'Inactive', active: false }], nextCursor: undefined })
+        ),
+      headers: { get: () => 'application/json' },
+    });
+    const client = new N8nClient(config);
+    await client.listWorkflowsAll(false);
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('active=false'),
+      expect.any(Object)
+    );
   });
 
   it('createWorkflow posts to workflows', async () => {
@@ -800,5 +850,52 @@ describe('N8nClient', () => {
     const client = new N8nClient(config);
     const res = await client.listWorkflowsPaginated();
     expect(res.data).toEqual([]);
+  });
+
+  it('calls console.error when debug is true', async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      text: () => Promise.resolve('{"data":[]}'),
+      headers: { get: () => 'application/json' },
+    });
+    const client = new N8nClient({ ...config, debug: true });
+    await client.listWorkflowsPaginated();
+    expect(spy).toHaveBeenCalledWith('[n8n-client]', 'GET workflows');
+    spy.mockRestore();
+  });
+
+  it('uses Agent with rejectUnauthorized false when no proxy', async () => {
+    delete process.env.HTTP_PROXY;
+    delete process.env.HTTPS_PROXY;
+    if (process.env.http_proxy) delete process.env.http_proxy;
+    if (process.env.https_proxy) delete process.env.https_proxy;
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      text: () => Promise.resolve('{"data":[]}'),
+      headers: { get: () => 'application/json' },
+    });
+    const client = new N8nClient({ ...config, rejectUnauthorized: false });
+    await client.listWorkflowsPaginated();
+    const call = mockFetch.mock.calls[0];
+    expect(call[1]).toHaveProperty('dispatcher');
+    expect(call[1].dispatcher).toBeDefined();
+  });
+
+  it('uses EnvHttpProxyAgent when HTTP_PROXY is set', async () => {
+    process.env.HTTP_PROXY = 'http://proxy.example.com:8080';
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      text: () => Promise.resolve('{"data":[]}'),
+      headers: { get: () => 'application/json' },
+    });
+    const client = new N8nClient(config);
+    await client.listWorkflowsPaginated();
+    const call = mockFetch.mock.calls[0];
+    expect(call[1]).toHaveProperty('dispatcher');
+    expect(call[1].dispatcher).toBeDefined();
   });
 });

@@ -2,8 +2,9 @@
 /**
  * n8n REST API CLI – manage workflows and executions via n8n API.
  *
- * Commands: list, run, executions, status, ping, credentials, get, export,
- *           activate, deactivate, delete, retry, stop, diff.
+ * Commands: list, run, execute, executions, status, ping, credentials, get,
+ *           export, activate, activate:all, deactivate, deactivate:all, delete,
+ *           retry, stop, diff.
  * Usage: npx n8n <command> [args]  or  npm run <command> -- [args]
  */
 
@@ -86,6 +87,7 @@ async function main(): Promise<void> {
       await transferWorkflow(client, args[1], args[2]);
       break;
     case 'run':
+    case 'execute':
       await runWorkflow(client, args[1]);
       break;
     case 'executions':
@@ -115,8 +117,14 @@ async function main(): Promise<void> {
     case 'activate':
       await activateWorkflow(client, args[1]);
       break;
+    case 'activate:all':
+      await activateAllWorkflows(client);
+      break;
     case 'deactivate':
       await deactivateWorkflow(client, args[1]);
+      break;
+    case 'deactivate:all':
+      await deactivateAllWorkflows(client);
       break;
     case 'delete':
       await deleteWorkflow(client, args[1]);
@@ -407,6 +415,46 @@ async function deactivateWorkflow(client: N8nClient, idOrName?: string): Promise
     console.error('Error:', (err as Error).message);
     process.exit(1);
   }
+}
+
+async function activateAllWorkflows(client: N8nClient): Promise<void> {
+  console.log('\n🟢 Activating all workflows...\n');
+  const inactive = await client.listWorkflowsAll(false);
+  if (inactive.length === 0) {
+    console.log('  No inactive workflows to activate.\n');
+    return;
+  }
+  let ok = 0;
+  for (const w of inactive) {
+    try {
+      await client.activateWorkflow(w.id);
+      console.log(`  ✓ ${w.name}`);
+      ok++;
+    } catch (err) {
+      console.error(`  ✗ ${w.name}: ${(err as Error).message}`);
+    }
+  }
+  console.log(`\n  Activated ${ok}/${inactive.length} workflow(s)\n`);
+}
+
+async function deactivateAllWorkflows(client: N8nClient): Promise<void> {
+  console.log('\n⚪ Deactivating all workflows...\n');
+  const active = await client.listWorkflowsAll(true);
+  if (active.length === 0) {
+    console.log('  No active workflows to deactivate.\n');
+    return;
+  }
+  let ok = 0;
+  for (const w of active) {
+    try {
+      await client.deactivateWorkflow(w.id);
+      console.log(`  ✓ ${w.name}`);
+      ok++;
+    } catch (err) {
+      console.error(`  ✗ ${w.name}: ${(err as Error).message}`);
+    }
+  }
+  console.log(`\n  Deactivated ${ok}/${active.length} workflow(s)\n`);
 }
 
 async function deleteWorkflow(client: N8nClient, idOrName?: string): Promise<void> {
