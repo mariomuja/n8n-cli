@@ -1,0 +1,6 @@
+{
+  "baseUrl": "https://your-n8n-instance.example.com",
+  "apiKey": "your-n8n-api-key",
+  "rejectUnauthorized": true,
+  "projectId": "optional-project-id-from-url"
+}

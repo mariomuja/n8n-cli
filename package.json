@@ -1,0 +1,63 @@
+{
+  "name": "n8n-cli",
+  "version": "1.0.0",
+  "description": "n8n REST API CLI – manage workflows and executions",
+  "type": "module",
+  "main": "dist/src/n8n-client.js",
+  "bin": {
+    "n8n": "dist/src/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/src/cli.js",
+    "agent": "node dist/src/cli.js",
+    "list": "node dist/src/cli.js list",
+    "list:active": "node dist/src/cli.js list:active",
+    "list:inactive": "node dist/src/cli.js list:inactive",
+    "config": "node dist/src/cli.js config",
+    "config:endpoint": "node scripts/config-set.mjs endpoint",
+    "config:apikey": "node scripts/config-set.mjs apikey",
+    "config:project": "node scripts/config-set.mjs project",
+    "validate": "node dist/src/cli.js validate",
+    "webhook": "node dist/src/cli.js webhook",
+    "clone": "node dist/src/cli.js clone",
+    "rename": "node dist/src/cli.js rename",
+    "search": "node dist/src/cli.js search",
+    "delete-execution": "node dist/src/cli.js delete-execution",
+    "tags": "node dist/src/cli.js tags",
+    "audit": "node dist/src/cli.js audit",
+    "import": "node dist/src/cli.js import",
+    "executions:errors": "node dist/src/cli.js executions:errors",
+    "variables": "node dist/src/cli.js variables",
+    "tag:create": "node dist/src/cli.js tag:create",
+    "workflow-tags": "node dist/src/cli.js workflow-tags",
+    "transfer": "node dist/src/cli.js transfer",
+    "run": "node dist/src/cli.js run",
+    "ping": "node dist/src/cli.js ping",
+    "credentials": "node dist/src/cli.js credentials",
+    "get": "node dist/src/cli.js get",
+    "export": "node dist/src/cli.js export",
+    "save": "node dist/src/cli.js save",
+    "save:all": "node dist/src/cli.js save:all",
+    "activate": "node dist/src/cli.js activate",
+    "deactivate": "node dist/src/cli.js deactivate",
+    "delete": "node dist/src/cli.js delete",
+    "executions": "node dist/src/cli.js executions",
+    "status": "node dist/src/cli.js status",
+    "retry": "node dist/src/cli.js retry",
+    "stop": "node dist/src/cli.js stop",
+    "diff": "node dist/src/cli.js diff",
+    "deploy:one": "node dist/src/deploy-one.js",
+    "test:client": "node dist/tests/run-tests.js"
+  },
+  "keywords": ["n8n", "api", "cli", "workflow"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "undici": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.0"
+  }
+}

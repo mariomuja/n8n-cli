@@ -1,0 +1,5 @@
+node_modules/
+dist/
+config/n8n-config.local.json
+*.log
+.DS_Store
