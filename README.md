@@ -231,7 +231,9 @@ npm run config:project -- optional-project-id
 
 | Command | Description |
 |---------|-------------|
-| `npm run test:client` | Run N8nClient integration tests |
+| `npm run test` | Run unit tests with coverage (Vitest) |
+| `npm run test:watch` | Run tests in watch mode |
+| `npm run test:client` | Run N8nClient integration tests (requires n8n instance) |
 
 ---
 

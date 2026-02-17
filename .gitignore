@@ -1,5 +1,6 @@
 node_modules/
 dist/
+coverage/
 config/n8n-config.local.json
 *.log
 .DS_Store

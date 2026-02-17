@@ -83,7 +83,7 @@ export async function loadConfig(): Promise<N8nConfig> {
       baseUrl,
       apiKey,
       projectId: process.env.N8N_PROJECT_ID?.trim() || undefined,
-      rejectUnauthorized: process.env.N8N_REJECT_UNAUTHORIZED === 'false',
+      rejectUnauthorized: process.env.N8N_REJECT_UNAUTHORIZED !== 'false',
     };
   }
 
